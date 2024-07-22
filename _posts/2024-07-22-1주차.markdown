@@ -249,6 +249,3 @@ sns.clustermap(df.corr(), annot=True, cmap='RdYlBu_r', vmin=-1, vmax=1)
     ↓ 분위수 구하는 수식 <br/>
     <img width="185" src="https://github.com/user-attachments/assets/f4ffdf82-efc9-4d98-93f6-4cc6f59f9802">
 ### 10.3.1 박스 플롯 실습
-
-
-## 실습하다 생긴 의문점

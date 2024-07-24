@@ -5,10 +5,10 @@ date:   2024-07-22 21:54:38 +0900
 categories: ML Session
 ---
 ## 10.1 탐색적 데이터 분석
-<font color='blue'>**Garbage In, Garbage Out(GIGO)**</font>? 가치가 없는 잘못된 데이터를 사용하면 무가치한 결과가 도출됨
+<font color='blue'>Garbage In, Garbage Out(GIGO)</font>? 가치가 없는 잘못된 데이터를 사용하면 무가치한 결과가 도출됨
 -> 다양한 각도에서 데이터를 탐색하고 시각화하여 가치 있는 데이터로 정제해 나가야 함
 
-<font color='blue'>**EDA(Exploratory Data Analysis)**</font> ? 가공하지 않은 원천의 데이터를 있는 그대로 탐색하고 분석하는 기법
+<font color='blue'>EDA(Exploratory Data Analysis)</font> ? 가공하지 않은 원천의 데이터를 있는 그대로 탐색하고 분석하는 기법
 - 기술통계와 데이터 시각화를 통해 데이터의 특성 파악
 - EDA를 할 때는 극단적인 해석은 피해야 하며 지나친 추록이나 자의적 해석도 지양해야 함
 - **EDA의 목적**
@@ -47,7 +47,7 @@ sns.stripplot(x='hotel', y='lead_time', data=df, size=1)
 ```
 
 ## 10.2 공분산과 상관성 분석
-데이터 탐색 과정에서 평균, 분산 등의 각 변수들의 특성을 파악한 다음, 항상 하는 과정 중 하나는 <font color='red'>**변수 간의 관계를 파악하는 것**</font><br/>
+데이터 탐색 과정에서 평균, 분산 등의 각 변수들의 특성을 파악한 다음, 항상 하는 과정 중 하나는 <font color='red'>변수 간의 관계를 파악하는 것</font><br/>
 
 타깃 변수 Y와 입력 변수 X와의 관계는 물론 **입력 변수 X들 간의 관계도 살펴봐야 함** <br/>
 -> 독립 변수의 변화에 따른 종속 변수의 변화량을 크게 하여 통계적 정확도를 감소시키는 다중공선성 방지 & 데이터에 대한 이해도 증가
@@ -55,7 +55,7 @@ sns.stripplot(x='hotel', y='lead_time', data=df, size=1)
 
 
 ### 10.2.1 공분산
-<font color='blue'>**공분산(Covariance)**</font> ? 서로 공유하는 분산의 관계를 나타냄<br/>
+<font color='blue'>공분산(Covariance)</font> ? 서로 공유하는 분산의 관계를 나타냄<br/>
 한계 : 각 변수 간의 다른 척도기준이 그대로 반영되어 공분산 값이 지니는 크기가 상관성의 정도를 나타내지 못함
 
 ↓ 공식<br/>
@@ -64,7 +64,7 @@ sns.stripplot(x='hotel', y='lead_time', data=df, size=1)
 
 ### 10.2.2 상관계수
 공분산을 변수 각각의 표준편차 값으로 나누는 정규화 실행 <- 공분산의 한계 해결<br/>
-<font color='blue'>**피어슨 상관계수**</font> ? 공분산을 함께 변하는 정도로 나눈 값
+<font color='blue'>피어슨 상관계수</font> ? 공분산을 함께 변하는 정도로 나눈 값
 <img width="200" src="https://github.com/user-attachments/assets/a260e122-7d34-4cfc-ac17-0a54fcec4f7b"> <br/>
 
 **상관계수를 해석하는 기준**
@@ -76,8 +76,8 @@ sns.stripplot(x='hotel', y='lead_time', data=df, size=1)
 -> 기울기가 위로 향하면 양의 상관관계 / 아래로 향하면 음의 상관관계
 
 <font color='magenta'>※ 산점도의 기울기와 상관계수는 관련이 없음, 분산의 관계성이 같다면, 기울기에 상관없이 상관계수는 같음 ※</font>
-
-<font color='blue'>**결정계수**</font> ? 상관계수를 제곱한 값, 총 변동 중에서 회귀선에 의해 설명되는 변동이 차지하는 비율
+<br/>
+<font color='blue'>결정계수</font> ? 상관계수를 제곱한 값, 총 변동 중에서 회귀선에 의해 설명되는 변동이 차지하는 비율
 - $R^2$ 로 표기됨
 - 회귀분석의 정확도를 가늠하는 중요한 기준
 
@@ -154,7 +154,7 @@ sns.clustermap(df.corr(), annot=True, cmap='RdYlBu_r', vmin=-1, vmax=1)
 연속형과 같은 양적 척도인지, 명목형과 같은 질적 척도인지에 따라 구분해서 그림
 
 - **양적 척도**
-    - <font color='blue'>막대그래프나 선그래프 or 히스토그램</font>으로 나타냄
+    - <font color='blue'>막대그래프나 선그래프 or 히스토그램</font>
         - **히스토그램** ? 겹치지 않는 변수의 구간을 동일하게 나눠서 구간별 도수를 막대그래프로 표현
             - 각 구간 : bin, 구간의 높이 : 밀도
 
@@ -248,4 +248,3 @@ sns.clustermap(df.corr(), annot=True, cmap='RdYlBu_r', vmin=-1, vmax=1)
 
     ↓ 분위수 구하는 수식 <br/>
     <img width="185" src="https://github.com/user-attachments/assets/f4ffdf82-efc9-4d98-93f6-4cc6f59f9802">
-### 10.3.1 박스 플롯 실습

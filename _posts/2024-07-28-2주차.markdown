@@ -54,6 +54,7 @@ categories: ML Session
 
 
 > 사이킷런의 다양한 메서드들
+
 - _fit()_ : 사이킷런 모델을 <font color='#FF69B4'>훈련</font>할 때 사용하는 메서드 <br/>
 - _predict()_ : 사이킷런 모델을 훈련하고 <font color='#FF69B4'>예측</font>할 때 사용하는 메서드<br/>
     - 출력값은 예측한 값이 나옴

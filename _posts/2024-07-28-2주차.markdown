@@ -1,0 +1,143 @@
+---
+layout: post
+title:  "[혼공머신 ch1~ch2]"
+date:   2024-07-22 21:54:38 +0900
+categories: ML Session
+---
+## Chapter 1 : 나의 첫 머신러닝
+
+### 1-1 인공지능과 머신러닝, 딥러닝
+**인공지능(Artificial intelligence)** ? 사람처럼 학습하고 추론할 수 있는 지능을 가진 컴퓨터 시스템
+- <font color='#1E90FF'>강인공지능 (Strong AI)</font> : 사람과 구분하기 어려운 지능을 가진 컴퓨터 시스템 
+   (like 터미네이터)
+ - <font color='#1E90FF'>약인공지능 (Weak AI)</font> : 특정 분야에서 사람의 일을 도와주는 보조 역할만 가능한 컴퓨터 시스템 
+    (like 알파고, 클로바, 시리)
+
+**머신러닝(Machine Learning)** ? 규칙을 일일이 프로그래밍하지 않아도 자동으로 데이터에서 규칙을 학습하는 알고리즘을 연구하는 분야
+- 지능을 구현하기 위한 SW 담당
+- 통계학과 관련됨
+- 대표적인 머신러닝 라이브러리 : 사이킷런(scikit-learn)
+
+
+**딥러닝(Deep Learning)** ? 인공 신경망(artificial neural network)을 기반으로 한 방법들을 통칭하여 부르는 인공지능 분야
+- 대표적인 딥러닝 라이브러리
+    - <font color='#1E90FF'>텐서플로우(Tensorflow)</font> by Google
+    - <font color='#1E90FF'>파이토치(PyTorch)</font> by Facebook
+
+### 1-3 마켓과 머신러닝
+
+> 머신러닝에서 사용하는 기본 용어들
+
+**특성(feature)** ? 데이터의 특징 (like 생선의 길이, 무게)
+
+**산점도(scatter plot)** ? x, y축으로 이뤄진 좌표계에 두 변수(x, y)의 관계를 표현하는 방법
+
+**맷플롯립(matplotlib)** ? 과학계산용 그래프를 그리는 대표적인 파이썬 패키지
+- _scatter()_ : 산점도를 그리는 함수
+- _xlabel()_ : x축의 레이블
+- _ylabel()_ : y축의 레이블
+- _show()_ : 그래프를 화면에 출력해주는 함수 
+
+**선형(linear)적** ? 산점도 그래프가 일직선에 가까운 형태로 나타나는 경우
+
+**훈련(training)** ? 모델에 데이터를 전달하여 규칙을 학습하는 과정
+ - 사이킷런에서 _fit()_ 메서드를 사용하여 훈련을 시킴
+
+**모델(model)** ? 머신러닝 알고리즘을 구현한 프로그램
+
+**k-최근접 이웃 알고리즘(K-Nearest Neighbor)** <br/>
+: 가장 가까운 이웃을 참고하여 정답을 예측하는 알고리즘, K-NN이라고도 부름
+- 분류에 가장 기본적으로 사용되는 알고리즘
+- 데이터를 모두 가지고 있다면, 이 알고리즘을 사용할 준비가 되었다는 뜻!
+- 새로운 데이터를 예측할 때는, 가장 가까운 직선거리에 어떤 데이터가 있는지를 살피기만 하면 됨
+- 단점 : 위의 특징으로 인해 데이터가 아주 많은 경우는 사용이 어려움
+
+
+> 사이킷런의 다양한 메서드들
+- _fit()_ : 사이킷런 모델을 <font color='#FF69B4'>훈련</font>할 때 사용하는 메서드 <br/>
+- _predict()_ : 사이킷런 모델을 훈련하고 <font color='#FF69B4'>예측</font>할 때 사용하는 메서드<br/>
+    - 출력값은 예측한 값이 나옴
+- _score()_ : 훈련된 사이킷런 모델의 <font color='#FF69B4'>성능을 측정</font>하는 메서드
+    - 출력값은 0-1로, 1에 가까울수록 정확도가 높다는 뜻
+ 
+
+## Chapter 2 : 데이터 다루기
+
+### 2-1 훈련 세트와 테스트 세트
+
+**지도 학습(supervised learning)** ? 알고리즘이 정답을 맞히는 것을 학습함
+ - 지도 학습에는 <font color='#1E90FF'>데이터인 입력(input)</font>과 <font color='#1E90FF'>정답인 타깃(target)</font>으로 이루어진 <font color='#1E90FF'>훈련 데이터(training data)</font>가 필요함
+ - 지도 학습 후 성능을 평가하기 위해서는, 다른 데이터를 준비하거나, 이미 준비된 데이터 중에서 일부를 떼어 내어 활용
+    - 테스트 세트(test set) : 평가에 사용하는 데이터 
+    - 훈련 세트(training set) : 훈련에 사용하는 데이터 
+    - <font color='#1E90FF'>샘플링 편향(sampling bias)</font> ? 훈련 세트와 테스트 세트에 샘플이 골고루 섞여있지 않을 때, 샘플링이 한쪽으로 치우치게 되는 현상<br/>
+        -> 테스트 세트와 훈련 세트에는 샘플을 골고루 섞어, 실행시켜야 함. 근데 이걸 어떻게 수행하냐? -> _numpy_ 사용!
+
+    <img width=200 src='https://github.com/user-attachments/assets/d20632b2-1e0d-4ae6-b149-f23a91685f3c' />
+    <img width=243 src='https://github.com/user-attachments/assets/3a18276d-f061-40be-b80c-fb724e653bbd' /> <br/>
+    <font color='#1E90FF'>행 : 샘플 / 열 : 특성</font>
+
+    ```
+    # numpy를 사용하여 샘플링 편향 방지
+    import numpy as np
+
+    input_arr = np.array(fish_data)
+    target_arr = np.array(fish_target)
+
+    np.random.seed(42) # 일정한 랜덤 결과를 만들기 위해 시드 지정 (책에서는 42로 해서 고대로 따라했음!)
+    index = np.arange(49) # 0~48 1씩 증가하는 인덱스 만듦
+    np.random.shuffle(index) # 냅다 섞어
+
+    # 49개의 샘플 중 35개는 훈련 세트로, 14개는 테스트 세트로 사용
+    train_input = input_arr[index[:35]]
+    train_target = target_arr[index[:35]]
+    test_input = input_arr[index[35:]]
+    test_target = target_arr[index[35:]]
+    ```
+
+
+**비지도 학습(supervised learning)** 
+- 타깃 없이 입력 데이터만 사용함
+- 데이터를 잘 파악하거나 변형하는 데 도움을 줌
+
+
+### 2-2 데이터 전처리
+**데이터 전처리(data preprocessing)** ? 특성값을 일정한 기준으로 맞춰 주는 작업
+- 몇몇 알고리즘은 샘플 간의 거리에 영향을 많이 받음, 기준이 다르다면 값을 올바르게 예측할 수 없음
+- <font color='#1E90FF'>표준점수(standard score) (or z점수)</font> <br/>
+  : 대표적인 전처리 방법, 각 특성값이 0에서 표준편차의 몇 배만큼 떨어져 있는지를 나타냄
+
+```
+mean = np.mean(train_input, axis=0) # mean() : 평균을 계산하는 함수
+std = np.std(train_input, axis=0) # std() : 표준편차를 계산하는 함수
+print(mean, std)
+
+train_scaled = (train_input - mean) / std 
+# 표준점수로 변환, (원본 데이터 - 평균) / 표준편차
+```
+
+k-최근접 이웃은 주변의 샘플 중 다수인 클래스를 예측으로 사용함 <br/>
+KNeighborsClassifier 클래스는 주어진 샘플에서 가장 가까운 이웃을 찾아 주는 kneighbors() 메서드를 제공함 <br/>
+이 메서드는 이웃까지의 거리와 이웃 샘플의 인덱스를 반환, 기본값이 5이기에 5개의 이웃이 반환됨 (샘플 중 2개는 도미이고 3개는 빙어) <br/>
+<font color='#FF69B4'>따라서 직관적으로는 도미가 가까워보여도 가까운 샘플 5개 중 빙어가 더 많으면 빙어로 예측하게 됨 </font>
+
+```
+import matplotlib.pyplot as plt
+
+distances, indexes = kn.kneighbors([[25, 150]]) # 가까운 샘플 5개 가져옴
+
+plt.scatter(train_input[:,0], train_input[:,1])
+plt.scatter(25, 150, marker='^') # marker : 모양을 지정
+plt.scatter(train_input[indexes, 0], train_input[indexes, 1], marker='D')
+plt.xlabel('length')
+plt.ylabel('weight')
+plt.show()
+```
+
+ <img width=243 src='https://github.com/user-attachments/assets/f43bf1ec-1118-4355-96a0-6476467e1a12' /> <br/>
+그런데 kneighbors로 판단해서 나온 distances는 거리의 기준이 다름  <br/>
+
+x축은 범위가 좁고 y축은 범위가 넓기 때문에, y축에서 조금만 더 멀어지면 거리가 완전 멀어진 값으로 계산됨  <br/>
+    -> 이것이 도미가 가까운 샘플에 못 들어간 이유!!! <br/>
+     => 기준을 똑같이 설정해야함 !! -> xlim(), ylim()을 사용하여 범위를 맞춰야 함 <br/>
+**스케일(scale)** ? 특성의 값이 놓인 범위

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "[혼공머신 ch1~ch2]"
-date:   2024-07-22 21:54:38 +0900
+date:   2024-07-28 20:04:38 +0900
 categories: ML Session
 ---
 ## Chapter 1 : 나의 첫 머신러닝

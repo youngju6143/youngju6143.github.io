@@ -176,6 +176,7 @@ print(perch_full)
     - *fit()* : 새롭게 만들 특성 조합을 찾음
     - *transform()* : 실제로 데이터를 변환
 - 여기서 사용하는 변환기 클래스 : **PolynomialFeatures**
+
 ```
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -183,6 +184,7 @@ poly = PolynomialFeatures()
 poly.fit([[2, 3]]) # 2개의 특성 2와 3으로 이루어진 샘플 사용
 print(poly.transform([[2, 3]])) # [1. 2. 3. 4. 6. 9.]
 ```
+
 2개의 특성을 가진 샘플 [2, 3] -> 6개의 특성을 가진 샘플 [1. 2. 3. 4. 6. 9.]로 변환됨
 
 [2, 3] -> [1. 2. 3. 4. 6. 9.] 변환! <br/>
@@ -253,6 +255,7 @@ plt.plot(np.log10(alpha_list), train_score)
 plt.plot(np.log10(alpha_list), test_score)
 plt.show()
 ```
+
 <img width=300 src='https://github.com/user-attachments/assets/40e19d6a-4c80-4322-8c50-201ecae6de00' /> <br/>
 : 파란색 : train_set, 주황색 : test_set <br/>
 왼쪽으로 갈수록 과대적합에 가까워지고, 오른쪽으로 갈수록 과소적합에 가까워짐 <br/>

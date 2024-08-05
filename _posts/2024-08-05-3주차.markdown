@@ -14,8 +14,7 @@ categories: ML Session
 - 두 변수 사이의 상관관계를 분석하는 방법
 
 ---
-
-**<K-최근접 이웃 회귀>**
+#### K-최근접 이웃 회귀
 
 <font color='#1E90FF'>K-최근접 이웃 분류 알고리즘 </font>
 1. 예측하려는 샘플에 가장 가까운 샘플 k개 선택
@@ -33,7 +32,8 @@ categories: ML Session
 <img width=300 src='https://github.com/user-attachments/assets/37023093-073f-426c-af56-fdb6a0eb5fd6'> <br/>
 
 ---
-**<결정 계수>**
+#### 결정 계수
+
 ```
 from sklearn.neighbors import KNeighborsRegressor
 
@@ -54,7 +54,7 @@ print(knr.score(test_input, test_target))
 <img width=300 src='https://github.com/user-attachments/assets/4af02a16-a552-4ebd-ac7f-e50794731bed' />
 
 ---
-**<과대적합 vs 과소적합>**
+#### 과대적합 vs 과소적합
 
 <font color='#1E90FF'>과대적합(overfitting)</font> ? 훈련 세트에서 점수가 굉장히 높으나, 테스트 세트에서는 점수가 굉장히 낮을 때
 - 훈련 세트에만 잘 맞는 모델이 됨
@@ -67,7 +67,8 @@ print(knr.score(test_input, test_target))
 
 
 ### 3-2 선형 회귀
-<K-최근접 이웃의 한계>
+
+#### K-최근접 이웃의 한계
 
 : 새로운 샘플이 훈련 세트의 범위를 벗어나면 엉뚱한 값을 예측할 수 있음<br/>
 -> 해결책 : <font color='#1E90FF'>선형 회귀</font>
@@ -104,7 +105,7 @@ plt.show()
 
 ---
 
-**<다항 회귀>**
+#### 다항 회귀
 
 **다항 회귀(polynomial regression)** ? 다항식을 사용한 선형 회귀
 - 최적의 직선이 아닌 최적의 곡선을 찾음
@@ -137,7 +138,7 @@ plt.show()
 
 ### 3-3 특성 공학과 규제
 
-**<다중 회귀>**
+#### 다중 회귀
 
 **다중 회귀(multiple regression)** ? 여러 개의 특성을 사용한 선형 회귀
 
@@ -149,7 +150,7 @@ plt.show()
 
 ---
 
-**<데이터 준비>**
+#### 데이터 준비
 
 **판다스(pandas)** ? 데이터 분석 라이브러리
 
@@ -167,7 +168,7 @@ perch_full = df.to_numpy()
 print(perch_full)
 ```
 
-**<사이킷런의 변환기>**
+#### 사이킷런의 변환기
 
 **변환기(transformer)** ? 특성을 만들거나 전처리하는 클래스 ( <-> 모델 클래스 : **추정기(estimator)**)
 - 입력 데이터를 변환하는 데 타깃 데이터가 필요하지 않음
@@ -195,7 +196,7 @@ PolynomialFeatures 클래스는 기본적으로 각 특성을 제곱한 항을 �
 
 ---
 
-**<규제>**
+#### 규제
 
 **규제(regularization)** ? 머신러닝 모델이 훈련 세트에 과대적합되지 않도록 만드는 일
 - 선형 회귀 모델의 경우, 특성에 곱해지는 계수(or 기울기)의 크기를 작게 만듦
@@ -204,6 +205,7 @@ PolynomialFeatures 클래스는 기본적으로 각 특성을 제곱한 항을 �
 : 오른쪽처럼 기울기를 줄여 보편적인 패턴을 학습시킴
 
 <font color='#FF69B4'>※ 규제를 적용하기 전 정규화 진행 ※</font>
+
 ```
 from sklearn.preprocessing import StandardScaler
 
@@ -212,9 +214,12 @@ ss.fit(train_poly)
 train_scaled = ss.transform(train_poly)
 test_scaled = ss.transform(test_poly)
 ```
+
 ---
 
-**<릿지 회귀>**
+
+#### 릿지 회귀
+
 선형 회귀 모델에 규제를 추가한 모델, 릿지와 라쏘
 - <font color='#1E90FF'>릿지(ridge)</font> ? **계수를 제곱한 값**을 기준으로 규제 적용, 보통 많이 씀
 - <font color='#1E90FF'>라쏘(lasso)</font> ? **계수의 절댓값**을 기준으로 규제 적용
@@ -225,7 +230,8 @@ test_scaled = ss.transform(test_poly)
 - alpha 큼 -> 규제 강도 세짐 -> 과소적합되도록 유도
 - alpha 작음 -> 규제 강도 약해짐 -> 과대적합되도록 유도
 
-**<라쏘 회귀>**
+#### 라쏘 회귀
+
 실행 방법은 릿지와 별반 다른 게 없음
 
 ```

@@ -1,9 +1,10 @@
 ---
 layout: post
 title:  "[혼공머신 ch3]"
-date:   2024-08-04 20:04:38 +0900
+date:   2024-08-05 19:38:38 +0900
 categories: ML Session
 ---
+
 ## Chapter 3 : 회귀 알고리즘과 모델 규제
 
 ### 3-1 k-최근접 이웃 회귀

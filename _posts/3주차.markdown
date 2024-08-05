@@ -1,0 +1,275 @@
+---
+layout: post
+title:  "[혼공머신 ch3]"
+date:   2024-08-04 20:04:38 +0900
+categories: ML Session
+---
+## Chapter 3 : 회귀 알고리즘과 모델 규제
+
+### 3-1 k-최근접 이웃 회귀
+**회귀(regression)** ? 클래스 중 하나로 분류하는 것이 아닌, 임의의 어떤 숫자를 예측하는 문제 <br/>
+<font color='gray'>ex) 내년도 경제 성장률 예측, 배달 도착 시간 예측, 농어의 무게 예측</font>
+- 정해진 클래스가 없고 임의의 수치를 출력함
+- 두 변수 사이의 상관관계를 분석하는 방법
+
+---
+
+**<K-최근접 이웃 회귀>**
+
+<font color='#1E90FF'>K-최근접 이웃 분류 알고리즘 </font>
+1. 예측하려는 샘플에 가장 가까운 샘플 k개 선택
+2. 샘플들의 클래스 확인, 다수 클래스를 새로운 샘플의 클래스로 예측
+
+<img width=300 src='https://github.com/user-attachments/assets/435d8691-e17c-4845-adb9-264ad4c7292e'> <br/>
+샘플 X와 가까운 이웃은 원보다 사각형이 더 많으므로 X의 클래스는 **사각형**!
+
+<font color='#1E90FF'> K-최근접 이웃 회귀 알고리즘 </font>
+1. 예측하려는 샘플에 가장 가까운 샘플 k개 선택
+    - 여기서 이웃 샘플의 타깃은 클래스가 아닌 임의의 수치
+2. 이웃 샘플의 수치 확인
+3. 수치들의 평균 구하기
+
+<img width=300 src='https://github.com/user-attachments/assets/37023093-073f-426c-af56-fdb6a0eb5fd6'> <br/>
+
+---
+**<결정 계수>**
+```
+from sklearn.neighbors import KNeighborsRegressor
+
+knr = KNeighborsRegressor()
+
+# K-최근접 이웃 회귀 모델을 훈련함
+knr.fit(train_input, train_target)
+
+print(knr.score(test_input, test_target))
+```
+
+해당 코드를 실행하면 0.9928094061010639 라는 점수 출력 <br/>
+-> <font color='#1E90FF'>결정계수(coefficient of determination) </font>
+
+**결정계수 계산 방법**
+- 예측에 가까워질수록 1에 가까워짐
+- 타깃의 평균 정도를 예측하는 수준일수록 0에 가까워짐
+<img width=300 src='https://github.com/user-attachments/assets/4af02a16-a552-4ebd-ac7f-e50794731bed' />
+
+---
+**<과대적합 vs 과소적합>**
+
+<font color='#1E90FF'>과대적합(overfitting)</font> ? 훈련 세트에서 점수가 굉장히 높으나, 테스트 세트에서는 점수가 굉장히 낮을 때
+- 훈련 세트에만 잘 맞는 모델이 됨
+
+<font color='#1E90FF'>과소적합(underfitting)</font> ? 훈련 세트보다 테스트 세트에서 점수가 굉장히 높거나, 두 세트에서의 점수가 모두 낮을 때
+- 모델이 너무 단순하거나, 데이터 세트가 너무 적을 때 발생
+
+
+---
+
+
+### 3-2 선형 회귀
+<K-최근접 이웃의 한계>
+
+: 새로운 샘플이 훈련 세트의 범위를 벗어나면 엉뚱한 값을 예측할 수 있음<br/>
+-> 해결책 : <font color='#1E90FF'>선형 회귀</font>
+
+**선형 회귀(linear regression)** ? 특성이 하나인 경우 어떤 직선을 학습하는 회귀 알고리즘
+- 어떤 직선이라 하믄 그 특성을 가장 잘 나타낼 수 있는 직선
+<img width=300 src='https://github.com/user-attachments/assets/e3cc25fc-6efa-4782-8778-ef6482df8c99' /> <br/>
+-> 누가 봐도 3번이 특성을 가장 잘 나타내는 직선
+
+사이킷런 : sklearn.linear_model 패키지 아래에 잇는 **LinearRegression** 클래스로 선형 회귀 알고리즘을 구현!
+- lr.coef_ : y = ax + b 에서의 a
+- lr.intercept_ : y = ax + b 에서의 b <br/>
+    -> coef_, intercept_를 머신러닝 알고리즘이 찾은 값이라는 의미에서 모델 파라미터(model parameter)라고 부름 
+    
+<font color='#1E90FF'>모델 기반 학습</font> ? 최적의 모델 파라미터를 찾는 훈련 과정 <br/>
+<font color='#1E90FF'>사례 기반 학습</font> ? 모델 파라미터가 없으며, 훈련 세트를 저장하는 것만 있는 훈련 과정
+
+```
+from sklearn.linear_model import LinearRegression
+
+lr = LinearRegression()
+lr.fit(train_input, train_target)
+print(lr.predict([[50]])) # 1241.83860323
+
+plt.scatter(train_input, train_target)
+
+# 15~50까지 일차방정식 그래프 그림
+plt.plot([15, 50], [15*lr.coef_ + lr.intercept_, 50*lr.coef_ + lr.intercept_])
+
+plt.scatter(50, 1241.8, marker='^')
+plt.show()
+```
+<img width=300 src='https://github.com/user-attachments/assets/71aedde9-92a3-47b5-b17f-963649708ebe' /> <br/>
+
+---
+
+**<다항 회귀>**
+
+**다항 회귀(polynomial regression)** ? 다항식을 사용한 선형 회귀
+- 최적의 직선이 아닌 최적의 곡선을 찾음
+
+```
+train_poly = np.column_stack((train_input ** 2, train_input))
+test_poly = np.column_stack((test_input ** 2, test_input))
+
+print(train_poly.shape, test_poly.shape) # (42, 2) (14, 2)
+
+lr = LinearRegression()
+lr.fit(train_poly, train_target)
+
+print(lr.predict([[50**2, 50]])) # [1573.98423528]
+
+point = np.arange(15, 50)
+
+plt.scatter(train_input, train_target)
+
+# 15~50까지 일차방정식 그래프 그림
+plt.plot(point, 1.01*point**2 - 21.6*point + 116.05)
+
+plt.scatter([50], [1574], marker='^')
+plt.show()
+```
+<img width=300 src='https://github.com/user-attachments/assets/6afc2aec-9eec-48c3-8c74-b1bfdd72bf26' /> <br/>
+: 선형 회귀에서 나온 그래프보다 정확성이 더 높은 걸 알 수 있음!!
+
+---
+
+### 3-3 특성 공학과 규제
+
+**<다중 회귀>**
+
+**다중 회귀(multiple regression)** ? 여러 개의 특성을 사용한 선형 회귀
+
+<img width=300 src='https://github.com/user-attachments/assets/40418320-4825-4caa-af64-905ea3f314d4' /> <br/>
+: 왼쪽은 1개의 특성, 오른쪽은 2개의 특성
+
+**특성 공학(feature engineering)** ? 기존의 특성을 사용해 새로운 특성을 뽑아내는 작업 <br/>
+<font color='gray'>ex) 농어의 길이, 높이, 두께라는 특성을 각각 제곱하여 추가, 거기에 각 특성을 서로 곱해서 또 다른 특성을 만들어냄</font>
+
+---
+
+**<데이터 준비>**
+
+**판다스(pandas)** ? 데이터 분석 라이브러리
+
+**데이터프레임(dataframe)** ? 판다스의 핵심 데이터 구조
+- 넘파이 배열과 비슷하지만 더 많은 기능을 제공하며, 넘파일 배열로 쉽게 바꿀 수 있음
+- 보통 CSV파일을 사용하여 데이터프레임을 만듦
+- *pd.read_csv()* 을 사용하여 CSV 파일을 읽음
+- *to_numpy()* 을 사용하여 넘파일 배열로 바꿈
+
+```
+import pandas as pd
+
+df = pd.read_csv('https://bit.ly/perch_csv')
+perch_full = df.to_numpy()
+print(perch_full)
+```
+
+**<사이킷런의 변환기>**
+
+**변환기(transformer)** ? 특성을 만들거나 전처리하는 클래스 ( <-> 모델 클래스 : **추정기(estimator)**)
+- 입력 데이터를 변환하는 데 타깃 데이터가 필요하지 않음
+- 변환기 클래스는 모두 *fit()*, *transform()* 메서드 제공
+    - *fit()* : 새롭게 만들 특성 조합을 찾음
+    - *transform()* : 실제로 데이터를 변환
+- 여기서 사용하는 변환기 클래스 : **PolynomialFeatures**
+```
+from sklearn.preprocessing import PolynomialFeatures
+
+poly = PolynomialFeatures()
+poly.fit([[2, 3]]) # 2개의 특성 2와 3으로 이루어진 샘플 사용
+print(poly.transform([[2, 3]])) # [1. 2. 3. 4. 6. 9.]
+```
+2개의 특성을 가진 샘플 [2, 3] -> 6개의 특성을 가진 샘플 [1. 2. 3. 4. 6. 9.]로 변환됨
+
+[2, 3] -> [1. 2. 3. 4. 6. 9.] 변환! <br/>
+값이 이렇게 나온 이유는,<br/>
+PolynomialFeatures 클래스는 기본적으로 각 특성을 제곱한 항을 추가하고 특성끼리 서로 곱한 항을 추가함<br/>
+=> 기존 2, 3, 2x2 = 4, 2x3 = 6, 3x3 = 9, <font color='#FF69B4'>1</font> <br/>
+<font color='#FF69B4'>여기서 1이 생긴 이유는?</font> **무게** = a * **길이** + b * **높이** + c * **두께** + d + 1 <br/>
+<- <font color='#FF69B4'>자동으로 절편인 1이 추가됨</font><br/>
+근데 사이킷런의 선형 모델은 자동으로 절편 추가하므로 굳이 1 필요 X <br/>
+-> *include_bias=False* 사용
+
+---
+
+**<규제>**
+
+**규제(regularization)** ? 머신러닝 모델이 훈련 세트에 과대적합되지 않도록 만드는 일
+- 선형 회귀 모델의 경우, 특성에 곱해지는 계수(or 기울기)의 크기를 작게 만듦
+
+<img width=300 src='https://github.com/user-attachments/assets/fd76812f-3790-458b-99d2-54886ea79622' /> <br/>
+: 오른쪽처럼 기울기를 줄여 보편적인 패턴을 학습시킴
+
+<font color='#FF69B4'>※ 규제를 적용하기 전 정규화 진행 ※</font>
+```
+from sklearn.preprocessing import StandardScaler
+
+ss = StandardScaler()
+ss.fit(train_poly)
+train_scaled = ss.transform(train_poly)
+test_scaled = ss.transform(test_poly)
+```
+---
+
+**<릿지 회귀>**
+선형 회귀 모델에 규제를 추가한 모델, 릿지와 라쏘
+- <font color='#1E90FF'>릿지(ridge)</font> ? **계수를 제곱한 값**을 기준으로 규제 적용, 보통 많이 씀
+- <font color='#1E90FF'>라쏘(lasso)</font> ? **계수의 절댓값**을 기준으로 규제 적용
+
+<font color='#1E90FF'>하이퍼파라미터(hyperparameter)</font> ? 머신러닝 모델이 학습할 수 없고 사람이 알려줘야 하는 파라미터
+
+릿지와 라쏘 모델을 사용할 때 , **alpha** 매개변수를 사용하여 <font color='#FF69B4'>규제의 강도 조절</font>
+- alpha 큼 -> 규제 강도 세짐 -> 과소적합되도록 유도
+- alpha 작음 -> 규제 강도 약해짐 -> 과대적합되도록 유도
+
+**<라쏘 회귀>**
+실행 방법은 릿지와 별반 다른 게 없음
+
+```
+from sklearn.linear_model import Ridge
+import matplotlib.pyplot  as plt
+
+# alpha 값을 바꿀 때마다, score() 메서드의 결과를 저장할 리스트
+train_score = [] 
+test_score = []
+
+alpha_list = [0.001, 0.01, 0.1, 1, 10, 100]
+for alpha in alpha_list:
+  ridge = Ridge(alpha=alpha)
+  ridge.fit(train_scaled, train_target)
+  train_score.append(ridge.score(train_scaled, train_target))
+  test_score.append(ridge.score(test_scaled, test_target))
+
+plt.plot(np.log10(alpha_list), train_score)
+plt.plot(np.log10(alpha_list), test_score)
+plt.show()
+```
+<img width=300 src='https://github.com/user-attachments/assets/40e19d6a-4c80-4322-8c50-201ecae6de00' /> <br/>
+: 파란색 : train_set, 주황색 : test_set <br/>
+왼쪽으로 갈수록 과대적합에 가까워지고, 오른쪽으로 갈수록 과소적합에 가까워짐 <br/>
+=> 좋은 성능을 가지기 위한 alpha의 값은 대략 0.1임
+
+```
+from sklearn.linear_model import Lasso
+
+# alpha 값을 바꿀 때마다, score() 메서드의 결과를 저장할 리스트
+train_score = [] 
+test_score = []
+
+alpha_list = [0.001, 0.01, 0.1, 1, 10, 100]
+for alpha in alpha_list:
+  lasso = Lasso(alpha=alpha, max_iter=10000)
+  lasso.fit(train_scaled, train_target)
+  train_score.append(lasso.score(train_scaled, train_target))
+  test_score.append(lasso.score(test_scaled, test_target))
+
+plt.plot(np.log10(alpha_list), train_score)
+plt.plot(np.log10(alpha_list), test_score)
+plt.show()
+```
+
+<img width=300 src='https://github.com/user-attachments/assets/1c1ff282-8ee5-446a-bc6a-0ada0ab096e7' /> <br/>
+: 릿지와 마찬가지로 왼쪽으로 갈수록 과대적합에, 오른쪽으로 갈수록 과소적합에 가까워지는 것을 알 수 있음 <br/>
+=> 좋은 성능을 가지기 위한 alpha의 값은 대략 1임

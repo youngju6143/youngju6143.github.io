@@ -75,7 +75,7 @@ print(train_target[indexes])
     - z : 어떤 값도 가능하나, 확률이 되려면 0~1(0~100%) 사이의 값이 되어야 함
 - 사이파이(scipy) 라이브러리 내에 expit() 시그모이드 함수 내장
 
-<img width=300 src=https://github.com/user-attachments/assets/4fcafb67-6e4a-4aa4-8bb1-73f9f5dc49f0 />
+<img width=300 src='https://github.com/user-attachments/assets/4fcafb67-6e4a-4aa4-8bb1-73f9f5dc49f0' />
 
 z가 아주 큰 음수일 때 0이 되고, 아주 큰 양수일 때 1이 되도록 바꾸려면
 <font color='#1E90FF'>시그모이드 함수(sigmoid function)</font> or <font color='#1E90FF'>로지스틱 함수(logistic function)</font> 사용
@@ -89,7 +89,7 @@ phi = 1 / (1 + np.exp(-z)) # 시그모이드 함수
 plt.plot(z, phi)
 plt.show()
 ```
-<img width=300 src=https://github.com/user-attachments/assets/fa505fce-4fb7-4773-a356-e1b4d86df629 />
+<img width=300 src='https://github.com/user-attachments/assets/fa505fce-4fb7-4773-a356-e1b4d86df629' />
 
 사이킷런에는 로지스틱 회귀 모델인 <font color='#FF69B4'>LogisticRegression 클래스</font>가 내장되어 있음
 - 이진 분류일 경우, 시그모이드 함수의 출력이 0.5보다 크면 양성 클래스, 0.5보다 작으면 음성 클래스로 판단함
@@ -172,7 +172,7 @@ print(lr.coef_.shape, lr.intercept_.shape)
 <font color='#1E90FF'>소프트맥스(softmax) 함수</font> ? 여러 개의 선형 방정식의 출력값을 0~1 사이로 압축하고 전체 합이 1이 되도록 만드는 함수
 - 사이파이(scipy) 라이브러리 내에 *scipy.special의 softmax()* 소프트맥스 함수 내장
 
-<img width=300 src=https://github.com/user-attachments/assets/b03632e4-a3a7-428d-8015-6cb9a2a9b4e7 />
+<img width=300 src='https://github.com/user-attachments/assets/b03632e4-a3a7-428d-8015-6cb9a2a9b4e7' />
 
 **↓ 로지스틱 회귀로 다중 분류 수행 코드**
 ```
@@ -216,7 +216,7 @@ print(np.round(proba, decimals=3))
     - 전체 샘플을 사용해 경사 하강법을 수행하는 방식 : <font color='#1E90FF'>배치 경사 하강법(batch gradient descent)</font>
     - **신경망 알고리즘에 사용됨**
 
-<img width=300 src=https://github.com/user-attachments/assets/638f6869-901f-4307-9824-8af05724f043 />
+<img width=300 src='https://github.com/user-attachments/assets/638f6869-901f-4307-9824-8af05724f043' />
 
 > 손실 함수
 
@@ -269,7 +269,7 @@ print(sc.score(test_scaled, test_target)) # 0.85
 - 에포크 횟수가 적음 -> 모델이 훈련 세트를 덜 학습함 -> 과소적합 발생 가능
 - 에포크 횟수가 많음 -> 훈련 세트를 완전히 학습함 -> 과대적합 발생 가능
 
-<img width=300 src=https://github.com/user-attachments/assets/590e0da9-b815-40ec-a9bd-8241139dc67f />
+<img width=300 src='https://github.com/user-attachments/assets/590e0da9-b815-40ec-a9bd-8241139dc67f' />
 
 => 과대적합이 시작하기 전인 지점에 훈련을 멈춰야 함 : <font color='#1E90FF'>조기 종료(early stopping)</font>
 
@@ -295,7 +295,7 @@ plt.plot(test_score)
 plt.show()
 ```
 
-<img width=300 src=https://github.com/user-attachments/assets/fd65c5d8-fd2c-46c3-ac83-88b577e97b28 />
+<img width=300 src='https://github.com/user-attachments/assets/fd65c5d8-fd2c-46c3-ac83-88b577e97b28' />
 
 -> 약 100번째 에포크가 조기 종료 지점이라는 것을 알 수 있음
 

@@ -1,0 +1,319 @@
+---
+layout: post
+title:  "[혼공머신 ch4]"
+date:   2024-08-12 19:08:38 +0900
+categories: ML Session
+---
+## Chapter 4 : 다양한 분류 알고리즘
+
+### 4-1 로지스틱 회귀
+<font color='#1E90FF'>다중 분류(multi-class classification)</font> ? 타깃 데이터에 2개 이상의 클래스가 포함된 문제 <br/>
+<font color='grey'>여기에서는 7개의 생선 종류(클래스)가 포함되어 있으므로 다중 분류에 해당함</font>
+
+**↓ k-최근접 이웃 분류기의 확률 예측**
+
+```
+from sklearn.neighbors import KNeighborsClassifier
+kn = KNeighborsClassifier(n_neighbors=3)
+kn.fit(train_scaled, train_target)
+print(kn.score(train_scaled, train_target))
+print(kn.score(test_scaled, test_target))
+
+print(kn.classes_) # 알파벳 순으로 순서가 매겨지므로 출력 또한 알파벳 순
+# ['Bream' 'Parkki' 'Perch' 'Pike' 'Roach' 'Smelt' 'Whitefish']
+
+print(kn.predict(test_scaled[:5]))
+# ['Perch' 'Smelt' 'Pike' 'Perch' 'Perch']
+```
+
+위 코드에서 예측한 5개의 샘플은 어떤 확률로 만들어졌을까?
+
+-> 사이킷런의 분류 모델은 predict_proba() 메서드를 통해 클래스별 확률값을 반환함 <br/>
+하나의 샘플에서 각각의 확률을 확인하고, 가장 높은 확률로 예측되는 클래스가 예측값이 됨!
+
+그럼 확률들은 어떻게 정해지나? <br>
+    -> 가장 가까운 이웃의 비율로 정해짐
+4번째 샘플의 경우, Roach가 1개, Perch가 2개의 이웃을 가지고 있음
+따라서 
+
+Roach(3번째 클래스)에 대한 확률 : 1/3 == 0.3333 <br/>
+Perch(5번째 클래스)에 대한 확률 : 2/3 == 0.6667
+
+**↓ 각 클래스의 확률값 확인 코드**
+```
+import numpy as np
+proba = kn.predict_proba(test_scaled[:5])
+print(np.round(proba, decimals=4)) # 소수점 네 번째 자리까지 표기, 다섯 번째 자리에서 반올림함
+
+'''
+[[0.     0.     1.     0.     0.     0.     0.    ] 1 : Perch
+ [0.     0.     0.     0.     0.     1.     0.    ] 1 : Smelt
+ [0.     0.     0.     1.     0.     0.     0.    ] 1 : Pike
+ [0.     0.     0.6667 0.     0.3333 0.     0.    ] 0.6667 : Perch
+ [0.     0.     0.6667 0.     0.3333 0.     0.    ]] 0.6667 : Perch
+'''
+```
+```
+distances, indexes = kn.kneighbors(test_scaled[3:4]) # 4번째 샘플의 이웃 확인
+print(train_target[indexes])
+'''
+ [[['Roach']
+  ['Perch']
+  ['Perch']]]
+'''
+```
+하지만 위 같은 경우, 확률은 0/3, 1/3, 2/3, 3/3으로 밖에 계산할 수 없음 <br/>
+조금 더 구체적인 확률을 구할 수 없을까 ? 
+
+> 로지스틱 회귀
+
+로지스틱 회귀(logistic regression) ? 독립 변수의 선형 결합을 이용하여 사건의 발생 가능성을 예측하는 데 사용되는 통계 기법
+- 선형 회귀와 동일하게 선형 방정식을 학습함
+- 선형 방정식 : z = a * (Weight) + b * (Length) + c * (Diagonal) + d * (Height) + e * (Width) + f
+    -  a, b, c, d, e : 가중치 or 계수,
+    - z : 어떤 값도 가능하나, 확률이 되려면 0~1(0~100%) 사이의 값이 되어야 함
+- 사이파이(scipy) 라이브러리 내에 expit() 시그모이드 함수 내장
+
+<img width=300 src=https://github.com/user-attachments/assets/4fcafb67-6e4a-4aa4-8bb1-73f9f5dc49f0 />
+
+z가 아주 큰 음수일 때 0이 되고, 아주 큰 양수일 때 1이 되도록 바꾸려면
+<font color='#1E90FF'>시그모이드 함수(sigmoid function)</font> or <font color='#1E90FF'>로지스틱 함수(logistic function)</font> 사용
+
+**↓ 시그모이드 함수 확인 코드**
+```
+import numpy as np
+import matplotlib.pyplot as plt
+z = np.arange(-5, 5, 0.1)
+phi = 1 / (1 + np.exp(-z)) # 시그모이드 함수
+plt.plot(z, phi)
+plt.show()
+```
+<img width=300 src=https://github.com/user-attachments/assets/fa505fce-4fb7-4773-a356-e1b4d86df629 />
+
+사이킷런에는 로지스틱 회귀 모델인 <font color='#FF69B4'>LogisticRegression 클래스</font>가 내장되어 있음
+- 이진 분류일 경우, 시그모이드 함수의 출력이 0.5보다 크면 양성 클래스, 0.5보다 작으면 음성 클래스로 판단함
+
+**↓ 로지스틱 회귀로 이진 분류 수행 코드**
+```
+# 도미와 빙어일 경우 True, 그 외는 False
+bream_smelt_indexes = (train_target.flatten() == 'Bream') | (train_target.flatten() == 'Smelt')  # Flatten train_target to 1D
+train_bream_smelt = train_scaled[bream_smelt_indexes] # True에 해당하는 값
+target_bream_smelt = train_target[bream_smelt_indexes]
+```
+```
+from sklearn.linear_model import LogisticRegression # 로지스틱 회귀 모델 훈련
+lr = LogisticRegression()
+lr.fit(train_bream_smelt, target_bream_smelt)
+
+print(lr.predict(train_bream_smelt[:5]))
+# ['Bream' 'Smelt' 'Bream' 'Bream' 'Bream']
+```
+```
+print(lr.predict_proba(train_bream_smelt[:5]))
+# 첫째 열 : 음성 클래스(0)에 대한 확률 - 도미
+# 둘째 열 : 양성 클래스(1)에 대한 확률 - 빙어
+
+'''
+[[0.99759855 0.00240145]
+ [0.02735183 0.97264817]
+ [0.99486072 0.00513928]
+ [0.98584202 0.01415798]
+ [0.99767269 0.00232731]]
+'''
+```
+```
+# 로지스틱 회귀가 학습한 계수
+print(lr.coef_, lr.intercept_)
+# [[-0.4037798  -0.57620209 -0.66280298 -1.01290277 -0.73168947]] [-2.16155132]
+```
+```
+decisions = lr.decision_function(train_bream_smelt[:5])
+print(decisions)
+# [-6.02927744  3.57123907 -5.26568906 -4.24321775 -6.0607117 ]
+
+# decisions 배열의 값을 확률로 변환하기
+from scipy.special import expit
+print(expit(decisions))
+# [0.00240145 0.97264817 0.00513928 0.01415798 0.00232731]
+```
+-> 로지스틱 회귀 모델이 학습한 방정식 <br/>
+       : z = -0.404 * (Weight) - 0.576 * (Length) - 0.663 * (Diagonal) - 1.013* (Height) - 0.732 * (Width) - 2.161
+
+**↓ 로지스틱 회귀로 다중 분류 수행 코드**
+```
+lr = LogisticRegression(C=20, max_iter=1000) 
+# C : 로지스틱 회귀에서 규제를 제어하는 매개변수, 작을수록 규제가 커짐
+# max_iter : 반복 수행하는 횟수
+
+lr.fit(train_scaled, train_target)
+print(lr.predict(test_scaled[:5]))
+
+proba = lr.predict_proba(test_scaled[:5])
+print(np.round(proba, decimals=3))
+
+'''
+['Perch' 'Smelt' 'Pike' 'Roach' 'Perch']
+[[0.    0.014 0.841 0.    0.136 0.007 0.003]
+ [0.    0.003 0.044 0.    0.007 0.946 0.   ]
+ [0.    0.    0.034 0.935 0.015 0.016 0.   ]
+ [0.011 0.034 0.306 0.007 0.567 0.    0.076]
+ [0.    0.    0.904 0.002 0.089 0.002 0.001]]
+ '''
+```
+```
+print(lr.coef_.shape, lr.intercept_.shape)
+#(7, 5) (7,)
+```
+- 다중 분류에서 coef_ 배열의 행과 intercept_는 7
+=> z를 7개나 계산함 == 클래스마다 z값을 계산함 -> 가장 높은 z값을 출력하는 클래스가 예측 클래스가 됨 <br/>
+계산 방법 : <font color='#1E90FF'>소프트맥스(softmax) 함수</font> 사용 -> 7개의 z값을 확률로 변환함
+
+<font color='#1E90FF'>소프트맥스(softmax) 함수</font> ? 여러 개의 선형 방정식의 출력값을 0~1 사이로 압축하고 전체 합이 1이 되도록 만드는 함수
+- 사이파이(scipy) 라이브러리 내에 *scipy.special의 softmax()* 소프트맥스 함수 내장
+
+<img width=300 src=https://github.com/user-attachments/assets/b03632e4-a3a7-428d-8015-6cb9a2a9b4e7 />
+
+**↓ 로지스틱 회귀로 다중 분류 수행 코드**
+```
+decision = lr.decision_function(test_scaled[:5])
+print(np.round(decision, decimals=2))
+'''
+[[ -6.5    1.03   5.16  -2.73   3.34   0.33  -0.63]
+ [-10.86   1.93   4.77  -2.4    2.98   7.84  -4.26]
+ [ -4.34  -6.23   3.17   6.49   2.36   2.42  -3.87]
+ [ -0.68   0.45   2.65  -1.19   3.26  -5.75   1.26]
+ [ -6.4   -1.99   5.82  -0.11   3.5   -0.11  -0.71]]
+'''
+```
+```
+from scipy.special import softmax
+proba = softmax(decision, axis=1) # axis : 소프트맥스를 계산할 축 지정
+print(np.round(proba, decimals=3))
+'''
+[[0.    0.014 0.841 0.    0.136 0.007 0.003]
+ [0.    0.003 0.044 0.    0.007 0.946 0.   ]
+ [0.    0.    0.034 0.935 0.015 0.016 0.   ]
+ [0.011 0.034 0.306 0.007 0.567 0.    0.076]
+ [0.    0.    0.904 0.002 0.089 0.002 0.001]]
+ '''
+```
+---
+
+### 4-2 확률적 경사 하강법
+
+> 점진적인 학습
+
+<font color='#1E90FF'>점진적 학습</font> ? 앞서 훈련한 모델을 버리지 않고, 새로운 데이터에 대해서만 조금씩 더 훈련하는 방법
+- 대표적인 점진적 학습 알고리즘 : **확률적 경사 하강법(Stochastic Gradient Descent)**
+
+<font color='#1E90FF'>확률적 경사 하강법(Stochastic Gradient Descent)</font> ? 가장 가파른 경사를 따라 원하는 지점에 도달하는 방법
+- 전체 샘플을 사용하지 않고 <font color='#FF69B4'>훈련 세트에서 랜덤하게 하나의 샘플을 골라</font> 가장 가파른 길을 찾음
+- 목표에 도달할 때까지 반복 
+- 훈련 세트를 한 번 모두 사용하는 과정 : 에포크(epoch)
+    - 일반적으로 경사 하강법은 수십, 수백 번 이상의 에포크 수행    
+    - 여러 개의 샘플을 사용해 경사 하강법을 수행하는 방식 : <font color='#1E90FF'>미니배치 경사 하강법(minibatch gradient descent)</font>
+    - 전체 샘플을 사용해 경사 하강법을 수행하는 방식 : <font color='#1E90FF'>배치 경사 하강법(batch gradient descent)</font>
+    - **신경망 알고리즘에 사용됨**
+
+<img width=300 src=https://github.com/user-attachments/assets/638f6869-901f-4307-9824-8af05724f043 />
+
+> 손실 함수
+
+<font color='#1E90FF'>손실 함수(loss function)</font> ? 어떤 문제에서 머신러닝 알고리즘이 얼마나 엉터리인지를 측정하는 기준
+- 당연히 값이 작을수록 정확도 높음
+- 손실 함수의 최솟값을 찾기 위해 확률적 경사 하강법 사용
+
+> 로지스틱 손실 함수
+
+- 손실 함수값은 연속적이여야 경사 하강법을 이용해 조금씩 움직일 수 있음
+-> 로지스틱 회귀 모델이 연속적인 확률을 만들어내므로, 로지스틱 회귀 모델 사용
+- 양성 클래스일 때, 손실은 -log(예측 확률)로 계산
+- 음성 클래스일 때, 손실은 -log(1-예측 확률)로 계산
+    - 예측 확률이 0에서 멀어질수록 손실이 커짐 -> 정확도 떨어짐 <br/>
+    : <font color='#1E90FF'>로지스틱 손실 함수(logistic loss function)</font> or <font color='#1E90FF'>이진 크로스엔트로피 손실 함수(binary cross-entropy loss function)</font>
+
+ 
+
+- 다중 분류에서 사용하는 손실 함수 : <font color='#1E90FF'>크로스엔트로피 손실 함수(cross-entropy loss function)</font>
+
+<br/>
+
+> SGDClassifier
+
+<font color='#1E90FF'>SGDClassifier</font> ? 사이킷런에서 확률적 경사 하강법을 제공하는 대표적인 분류용 클래스
+
+**↓ SGDClassifier를 사용해서 확률적 경사 하강법을 이용한 모델 학습 코드**
+```
+from sklearn.linear_model import SGDClassifier
+
+sc = SGDClassifier(loss='log', max_iter=10, random_state=42)
+# loss='log' : 로지스틱 손실 함수로 지정
+
+sc.fit(train_scaled, train_target)
+print(sc.score(train_scaled, train_target)) # 0.773109243697479
+print(sc.score(test_scaled, test_target)) # 0.775
+```
+
+```
+sc.partial_fit(train_scaled, train_target)
+# partial_fit() : 모델을 이어서 훈련시키는 함수
+
+print(sc.score(train_scaled, train_target)) # 0.8151260504201681
+print(sc.score(test_scaled, test_target)) # 0.85
+# 더 훈련시켜서 정확도가 전보다 올라감
+```
+
+> 에포크와 과대 / 과소적합
+
+- 에포크 횟수가 적음 -> 모델이 훈련 세트를 덜 학습함 -> 과소적합 발생 가능
+- 에포크 횟수가 많음 -> 훈련 세트를 완전히 학습함 -> 과대적합 발생 가능
+
+<img width=300 src=https://github.com/user-attachments/assets/590e0da9-b815-40ec-a9bd-8241139dc67f />
+
+=> 과대적합이 시작하기 전인 지점에 훈련을 멈춰야 함 : <font color='#1E90FF'>조기 종료(early stopping)</font>
+
+**↓ 조기 종료 지점 찾는 코드**
+
+```
+import numpy as np
+sc = SGDClassifier(loss='log', random_state=42)
+train_score = []
+test_score = []
+classes = np.unique(train_target)
+
+# 300번 에포크
+for _ in range(0, 300):
+    sc.partial_fit(train_scaled, train_target, classes=classes)
+    train_score.append(sc.score(train_scaled, train_target))
+    test_score.append(sc.score(test_scaled, test_target))
+```
+```
+import matplotlib.pyplot as plt
+plt.plot(train_score)
+plt.plot(test_score)
+plt.show()
+```
+
+<img width=300 src=https://github.com/user-attachments/assets/fd65c5d8-fd2c-46c3-ac83-88b577e97b28 />
+
+-> 약 100번째 에포크가 조기 종료 지점이라는 것을 알 수 있음
+
+```
+sc = SGDClassifier(loss='log', max_iter=100, tol=None, random_state=42)
+# tol=None : 100까지 멈추지 않고 반복학습 시킴
+
+sc.fit(train_scaled, train_target)
+print(sc.score(train_scaled, train_target)) # 0.957983193277311
+print(sc.score(test_scaled, test_target)) # 0.925
+```
+
+힌지 손실(hinge loss) ? 손실 함수 중 하나의 종류
+- 서포트 벡터 머신(support vector machine) 이라고도 부름
+
+**↓ 힌지 손실을 사용해 모델을 훈련하는 코드**
+```
+sc = SGDClassifier(loss='hinge', max_iter=100, tol=None, random_state=42)
+sc.fit(train_scaled, train_target)
+print(sc.score(train_scaled, train_target)) # 0.9495798319327731
+print(sc.score(test_scaled, test_target)) # 0.925
+```

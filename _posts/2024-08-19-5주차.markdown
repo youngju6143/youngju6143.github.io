@@ -1,0 +1,105 @@
+---
+layout: post
+title:  "[혼공머신 ch5]"
+date:   2024-08-19 19:08:38 +0900
+categories: ML Session
+---
+
+## Chapter 5 : 트리 알고리즘
+
+### 5-1 결정 트리
+
+> 결정 트리
+
+
+<font color='#1E90FF'>결정 트리(Decision Tree)</font> ? 스무고개처럼 질문을 이어가며 학습하는 모델 <br/>
+- 사이킷런이 결정 트리 알고리즘 제공 *(DecisionTreeClassifier)*
+    - *plot_tree()* : 결정 트리를 이해하기 쉬운 트리 그림으로 출력해주는 함수
+- <font color='#FF69B4'>표준화 전처리가 필요 없음</font>
+
+**↓ 결정 트리 모델 코드**
+```
+from sklearn.tree import DecisionTreeClassifier
+dt = DecisionTreeClassifier()
+dt.fit(train_scaled, train_target)
+print(dt.score(train_scaled, train_target))
+print(dt.score(test_scaled, test_target))
+```
+```
+# 결정 트리 출력
+import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
+plt.figure(figsize=(10, 7))
+plot_tree(dt)
+plt.show()
+```
+<img width=300 src='https://github.com/user-attachments/assets/ccc8d254-33a3-40e8-9251-7702abf0885a'>
+
+<br/>
+
+```
+# 결정 트리의 depth 지정
+
+plt.figure(figsize=(10, 7))
+plot_tree(dt, max_depth=1, filled=True, feature_names=['alcohol', 'sugar', 'pH'])
+plt.show()
+```
+<img width=300 src='https://github.com/user-attachments/assets/e49ee145-2a82-41b7-a6be-6265744599be'>
+
+- 루트 노드 : suger가 0.239 이하인지 확인
+    - Yes -> 왼쪽 가지 / No -> 오른쪽 가지
+    - 총 샘플 수 : 5197개 == value
+        - <font color='grey'>음성 클래스(레드) : 1258개 / 양성 클래스(화이트) : 3939개</font>
+- *filled=True* : 클래스마다 색깔을 부여하고, 어떤 클래스의 비율이 높아지면 점점 진한 색으로 표시함
+    - 오른쪽 노드에서 양성 클래스의 비율이 높기 때문에 가장 진함
+
+> 불순도
+
+- gini : <font color='#1E90FF'>지니 불순도(Gini impurity)</font> : criterion 매개변수의 기본값
+    - criterion : 노드에서 데이터를 분할할 기준을 정함
+    - **지니 불순도 = 1 - (음성 클래스 비율^2 + 양성 클래스 비율^2)**
+    - 노드에 하나의 클래스만 있을 때, **지니 불순도 == 0** <- <font color='#1E90FF'>순수 노드</font>
+    - 클래스의 비율이 동일할 때, **지니 불순도 == 0.5** <- <font color='#FF69B4'>최악</font>
+- <font color='#1E90FF'>정보 이득(information gain)</font> ? 부모와 자식 노드 사이의 불순도 차이
+    - 결정 트리 모델은 부모 노드와 자식 노드의 불순도 차이가 가능한 크도록 트리를 성장시킴
+    - **정보 이득이 최대**가 되도록 데이터 분할함. 이때, **지니 불순도를 기준**으로 사용함
+- <font color='#1E90FF'>엔트로피 불순도</font> ? criterion='entropy', 불순도의 기준을 결정
+    - 음성 클래스 비율 * ㏒_2(음성 클래스 비율) - 양성 클래스 비율 * ㏒_2(양성 클래스 비율)
+
+- 결정 트리에서 예측하는 방법 : 리프 노드에서 가장 많은 클래스 == <font color='#FF69B4'>예측 클래스!!</font>
+    - 위 그림에서는 왼쪽, 오른쪽 노드 둘 다 양성 클래스의 개수가 많으므로 양성 클래스가 예측 클래스
+
+> 가지치기
+
+- 방법 :<font color='#FF69B4'>트리의 최대 깊이를 지정</font>
+
+↓ 가지치기 코드
+
+```
+# 가지치기 
+
+dt = DecisionTreeClassifier(max_depth=3, random_state=42)
+dt.fit(train_scaled, train_target)
+print(dt.score(train_scaled, train_target))
+print(dt.score(test_scaled, test_target))
+plt.figure(figsize=(20, 15))
+plot_tree(dt, filled=True, feature_names=['alcohol', 'sugar', 'pH'])
+plt.show()
+```
+```
+print(dt.feature_importances_) # 특성 중요도 출력
+# [0.12345626 0.86862934 0.0079144 ]
+# [alcohol, sugar, pH]
+```
+
+<img width=300 src='https://github.com/user-attachments/assets/c8461417-ce95-493c-a958-c25619674f0a'>
+
+- 음성 클래스 : 노란색 노드
+- *max_depth=3* : 루트 노드 아래로 최대 3개의 노드까지만 성장할 수 있음
+
+
+---
+
+### 5-2 교차 검증과 그리드 서치
+
+### 5-3 트리의 앙상블

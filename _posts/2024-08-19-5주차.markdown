@@ -71,7 +71,7 @@ plt.show()
 
 > 가지치기
 
-- 방법 :<font color='#FF69B4'>트리의 최대 깊이를 지정</font>
+- 방법 : <font color='#FF69B4'>트리의 최대 깊이를 지정</font>
 
 ↓ 가지치기 코드
 
@@ -102,4 +102,243 @@ print(dt.feature_importances_) # 특성 중요도 출력
 
 ### 5-2 교차 검증과 그리드 서치
 
+> 검증 세트
+
+<font color='#1E90FF'>검증 세트(validation set)</font> ? 훈련 세트를 또 다시 나눈 세트
+- 훈련 세트에서 모델 훈련, 검증 세트로 모델 평가
+
+**↓ 검증 세트로 분리하는 코드**
+```
+from sklearn.model_selection import train_test_split
+train_input, test_input, train_target, test_target = train_test_split(
+    data, target, test_size=0.2, random_state=42)
+
+# 훈련세트인 sub와 검증 세트 val로 나눔
+sub_input, val_input, sub_target, val_target = train_test_split(
+    train_input, train_target, test_size=0.2, random_state=42)
+
+print(sub_input.shape, val_input.shape)
+# (4157, 3) (1040, 3)
+```
+```
+from sklearn.tree import DecisionTreeClassifier
+dt = DecisionTreeClassifier(random_state=42)
+dt.fit(sub_input, sub_target)
+
+print(dt.score(sub_input, sub_target))
+print(dt.score(val_input, val_target))
+# 0.9971133028626413
+# 0.864423076923077
+```
+
+> 교차 검증
+- <font color='#1E90FF'>교차 검증(cross validation)</font> ? 검증 세트를 떼어 내어 평가하는 과정을 여러 번 반복하는 방법
+    - 안정적인 검증 점수를 얻고 훈련에 더 많은 데이터를 사용할 수 있음
+    - <font color='#1E90FF'>3-폴트 교차 검증</font> ? 훈련 세트를 세 부분으로 나눠서 교차 검증을 수행하는 방법
+        - 사이킷런에 *cross_validate()*라는 교차 검증 함수 존재
+
+**↓ 교차 검증하는 코드**
+```
+from sklearn.model_selection import cross_validate
+
+# 평가할 모델 객체를 첫 번째 파라미터에 넣음
+# 훈련 세트 전체를 cross_validate() 함수에 전달
+scores = cross_validate(dt, train_input, train_target)
+print(scores)
+
+'''
+{'fit_time': array([0.0150857 , 0.0118525 , 0.01249075, 0.01304889, 0.0188992 ]), 
+'score_time': array([0.00233412, 0.00231385, 0.00222421, 0.00210118, 0.00281906]), 
+'test_score': array([0.86923077, 0.84615385, 0.87680462, 0.84889317, 0.83541867])}'
+'''
+```
+
+- *fit_time* : 모델을 훈련하는 시간
+- *score_time* : 모델을 검증하는 시간
+- *test_score* : 검증 폴드의 점수
+    - 교차 검증의 최종 점수를 test_score 키에 담긴 5개의 점수를 평균하여 얻을 수 있음
+    - *print(np.mean(scores['test_score']))*
+
+<font color='#FF69B4'>※ cross_validate()는 훈련 세트를 섞어 폴드를 나누지 않음 ※ </font>
+<br/>
+    -> 훈련 세트를 섞기 위해 <font color='#1E90FF'>분할기(splitter)</font> 지정 필요
+- 사이킷런에서 회귀 모델일 경우 *KFold* 분할기를, 분류 모델일 경우 *StratifiedKFold* 분할기를 사용
+
+**↓ 분할기 사용한 코드**
+
+```
+# 분할기 사용
+
+from sklearn.model_selection import StratifiedKFold
+scores = cross_validate(dt, train_input, train_target, cv=StratifiedKFold())
+print(np.mean(scores['test_score']))
+
+# n_splits 매개변수 : 몇 폴드 교차 검증을 할 지 정함
+splitter = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+scores = cross_validate(dt, train_input, train_target, cv=splitter)
+print(np.mean(scores['test_score']))
+```
+
+> 하이퍼파라미터 튜닝
+
+- <font color='#1E90FF'>하이퍼파라미터</font> ? 모델이 학습할 수 없어서 사용자가 지정해야만 하는 파라미터
+    - 하이퍼파라미터 튜닝 진행 방식
+        1. 먼저 라이브러리가 제공하는 기본값을 그대로 사용해 모델을 훈련한다.
+        2. 검증 세트의 점수나 교차 검증을 통해서 매개변수를 조금씩 바꿔 본다.
+    - 교차 검증에서 최적의 하이퍼파라미터를 찾으면 전체 훈련 세트로 모델을 다시 만들어야 함
+
+>그리드 서치
+
+- <font color='#1E90FF'>그리드 서치(Grid Search)</font> ? 하이퍼파라미터 탐색과 교차 검증을 한 번에 수행
+    - 사이킷런에서 *GridSearchCV*로 제공
+    - 별도로 cross_validate() 부를 필요 X
+    - **그리드 서치 진행 방식**
+        1. 먼저 탐색할 매개변수 지정
+        2. 훈련 세트에서 그리드 서치 수행 -> 최상의 평균 검증 점수가 나오는 매개변수 조합 서치
+        3. 그리드 서치 : 최상의 매개변수에서 전체 훈련 세트를 사용해 최종 모델 훈련
+    - 매개변수를 일일이 바꿔가며 교차 검증을 수행하지 않아도 됨 <br/>
+        -> <font color='#FF69B4'>원하는 매개변수 값을 나열하면 자동으로 교차 검증을 수행해서 최상의 매개변수를 찾아줌</font>
+
+**↓ 그리드 서치 코드**
+```
+from sklearn.model_selection import GridSearchCV
+params = {'min_impurity_decrease' : [0.0001, 0.0002, 0.0003, 0.0004, 0.0005]}
+
+# 그리드 서치 객체 생성
+gs = GridSearchCV(DecisionTreeClassifier(random_state=42), params, n_jobs=-1)
+
+# 그리드 서치 모델 훈련
+gs.fit(train_input, train_target)
+
+dt = gs.best_estimator_ # 새로 만든 모델
+print(dt.score(train_input, train_target))
+print(gs.best_params_) # 그리드 서치로 찾은 최적의 매개변수
+print(gs.cv_results_['mean_test_score']) # 각 매개변수에서 수행한 교차 검증의 평균 점수
+
+best_index = np.argmax(gs.cv_results_['mean_test_score']) # 가장 큰 값의 인덱스 출력 
+print(gs.cv_results_['params'][best_index])
+
+# 0.9615162593804117
+# {'min_impurity_decrease': 0.0001}
+# [0.86819297 0.86453617 0.86492226 0.86780891 0.86761605]
+# {'min_impurity_decrease': 0.0001}
+```
+
+-> 평균점수가 약 0.868로 가장 높은 0.0001이 가장 최적의 값으로 선택되었다는 뜻!
+
+```
+params = {'min_impurity_decrease': np.arange(0.0001, 0.001, 0.0001),
+          'max_depth' : range(5, 20, 1),
+          'min_samples_split' : range(2, 100, 10)
+          }
+gs = GridSearchCV(DecisionTreeClassifier(random_state=42), params, n_jobs=-1)
+gs.fit(train_input, train_target)
+
+print(gs.best_params_)
+print(np.max(gs.cv_results_['mean_test_score']))
+
+# {'max_depth': 14, 'min_impurity_decrease': 0.0004, 'min_samples_split': 12}
+# 0.8683865773302731
+```
+
+> 랜덤 서치
+
+- 매개변수를 샘플링할 수 있는 확률 분포
+
+**↓ 랜덤 서치 코드**
+
+```
+params = {'min_impurity_decrease': uniform(0.0001, 0.001),
+          'max_depth' : randint(20, 50),
+          'min_samples_split' : randint(2, 25),
+          'min_samples_leaf' : randint(1, 25)
+          }
+
+from sklearn.model_selection import RandomizedSearchCV
+gs = RandomizedSearchCV(DecisionTreeClassifier(random_state=42), params,
+                        n_iter=100, n_jobs=-1, random_state=42)
+gs.fit(train_input, train_target)
+
+print(gs.best_params_)
+print(np.max(gs.cv_results_['mean_test_score']))
+
+df = gs.best_estimator_
+print(df.score(test_input, test_target))
+
+# {'max_depth': 39, 'min_impurity_decrease': 0.00034102546602601173, 
+#   'min_samples_leaf': 7, 'min_samples_split': 13}
+
+# 0.8695428296438884
+
+# 0.86
+```
+
+---
+
 ### 5-3 트리의 앙상블
+
+> 정형 데이터와 비정형 데이터
+
+<font color='#1E90FF'>정형 데이터(structured data)</font> ? 구조화된 데이터 <br/>
+<font color='grey'>ex) CSV, 데이터베이스, 엑셀, ...</font>
+
+<font color='#1E90FF'>비정형 데이터(unstructured data)</font> ? 비구조화된 데이터 <br/>
+<font color='grey'>ex) 텍스트 데이터, 사진, 음악, ...</font>
+
+ 
+<font color='#1E90FF'>앙상블 학습(ensemble learning)</font> ? 여러 개의 분류기를 생성하고 각 예측들을 결합함으로써 보다 정확한 예측을 도출하는 기법
+- 정형 데이터를 다루는 데 가장 뛰어난 성과를 내는 알고리즘
+- 대부분 결정 트리를 기반으로 만들어져 있음
+
+> 랜덤 포레스트
+
+<font color='#1E90FF'>랜덤 포레스트(Random Forest)</font> ? 앙상블 학습의 대표 중 하나
+- 결정 트리를 랜덤하게 만들어 결정 트리의 숲을 만듦
+- 각 결정 트리의 예측을 사용해 최종 예측을 만듦
+- 훈련 세트에 과대적합되는 것을 막아주며, 검증 세트와 테스트 세트에서 안정적인 성능 얻을 수 있음
+- **랜덤 포레스트 형성 단계**
+    1. 훈련 데이터에서 랜덤하게 샘플을 추출하여 각 트리를 훈련하기 위한 데이터를 만든다.
+        - 이때 샘플은 중복될 수 있으며, 이렇게 만들어진 샘플을 부트스트랩 샘플이라고 부름 
+        - <font color='#1E90FF'>OOB(out of bag) 샘플</font> ? 부트스트랩 샘플에 포함되지 않는 샘플
+        - OOB 샘플을 사용하여 부트스트랩 샘플로 훈련한 결정 트리를 평가할 수 있음
+    2. 각 노드를 분할할 때, 일부 특성을 랜덤하게 고르고, 이 중 최선의 분할을 찾는다.
+        - 이때 전체 특성 개수의 제곱근만큼의 특성을 선택함
+    3. 회귀 / 분류
+        - 회귀 : 각 트리의 예측을 평균함
+        - 분류 : 각 트리의 클래스별 확률을 평균하여 가장 높은 확률을 가진 클래스를 예측을 삼는다.
+
+<img width=300 src='https://github.com/user-attachments/assets/f3a05f4b-26e5-477c-9ecb-35013b2b24ac'>
+<br/>
+<br/>
+
+> 엑스트라 트리
+
+<font color='#1E90FF'>엑스트라 트리(Extra Trees)</font> : 랜덤 포레스트와 매우 비슷하게 동작함
+- 부트스트랩 샘플을 사용하지 않음 -> 전체 훈련 세트 사용
+- 노드 분할할 때, 무작위로 분할함
+- 성능은 낮아질 수 있으나, 과대적합을 막고 검증 세트의 점수를 높일 수 있음
+- 사이킷런에서 *ExtraTreesClassifier* 제공
+
+<br/>
+
+>그레이디언트 부스팅
+
+<font color='#1E90FF'>그레이디언트 부스팅(Gradient Boosting)</font> ?
+깊이가 얕은 결정 트리를 사용하여 이전 트리의 오차를 보완하는 방식으로 앙상블 하는 방법
+- 과대적합에 강하고, 일반적으로 높은 일반화 성능 기대 가능
+- 사이킷런에서는 *GradientBoostingClassifier* 제공
+- **경사 하강법**을 사용하여 트리를 앙상블에 추가함
+- 분류 : 로지스틱 손실 함수 사용 / 회귀 : 평균 제곱 오차 함수 사용
+- 성능 : 그레이디언트 부스팅 > 랜덤 포레스트 (일반적임)
+
+<br/>
+
+
+> 히스토그램 기반 그레이디언트 부스팅
+
+<font color='#1E90FF'>히스토그램 기반 그레이디언트 부스팅(Histogram-based Gradient Boosting)</font> ?
+그레이디언트 부스팅의 속도와 성능을 개선한 앙상블 기법
+- 입력 특성을 256개의 구간으로 먼저 나눔
+    -> 노드 분할 시, 최적의 분할을 매우 빠르게 찾을 수 있음
+- 사이킷런에서는 *HistGradientBoostingClassifier* 제공
+    - 트리의 개수 지정 시, 부스팅 반복 횟수를 지정하는 *max_iter* 사용

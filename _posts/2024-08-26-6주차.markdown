@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "[혼공머신 ch6]"
-date:   2024-08-19 13:08:38 +0900
+date:   2024-08-27 00:36:38 +0900
 categories: ML Session
 ---
 

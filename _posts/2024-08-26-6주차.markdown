@@ -1,0 +1,8 @@
+---
+layout: post
+title:  "[혼공머신 ch6]"
+date:   2024-08-19 13:08:38 +0900
+categories: ML Session
+---
+
+## Chapter 6 : 비지도 학습

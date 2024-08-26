@@ -313,3 +313,192 @@ k=3인 곳에서 꺾임 -> 3이 최적의 클러스터 개수!!
 ---
 
 ### 6-3 주성분 분석
+> 차원과 차원 축소
+
+<font color='#1E90FF'>차원(dimension)</font> ? 특성의 또 다른 이름 <br/>
+<font color=grey>- ex) 10,000개의 특성이 있다 == 10,000개의 차원이 있다</font>
+
+<font color='#1E90FF'>차원 축소(dimensionally reduction)</font> ? 데이터를 가장 잘 나타내는 일부 특성을 선택하여 데이터 크기를 줄이고 지도 학습 모델의 성능을 향상시킬 수 있는 방법
+-  대표적인 차원 축소 알고리즘 : <font color='#1E90FF'>주성분 분석(principal component analysis)</font> (a.k.a <font color='#1E90FF'>PCA</font>)
+
+> 주성분 분석 소개
+
+<font color='#1E90FF'>주성분 분석(principal component analysis)</font> ? 데이터에 있는 분산이 큰 방향을 찾는 방법
+- 분산 ? 데이터가 멀리 퍼져있는 정도
+
+<img width=300 src="https://github.com/user-attachments/assets/05ffc2cc-67f7-41a2-8939-8429210f2414"/>
+
+위 그래프의 경우, 대각선 방향이 분산이 크다는 것을 알 수 있음
+- 화살표의 위치는 상관 X
+
+<img width=300 src="https://github.com/user-attachments/assets/b258c7d9-b1be-4777-bedb-5cac2faca8ab"/>
+
+이 직선을 원점으로 옮긴 후. 두 원소로 이루어진 벡터로 쓸 수 있음<br/>
+=> <font color='#1E90FF'>주성분(principal component)</font> 라고 부름
+
+주성분 벡터 : 원본 데이터에 있는 어떤 방향<br/>
+=> 주성분 벡터의 원소 개수 == 원본 데이터셋에 있는 특성 개수
+
+원본 데이터 : 주성분을 사용하여 차원 축소 가능 -> 투영
+
+<img width=300 src="https://github.com/user-attachments/assets/f860aa67-15da-44fb-9e16-e1a9cbb0a8f4"/>
+
+> PCA 클래스
+
+**↓  PCA 클래스를 사용하여 차원 축소하는 코드**
+```
+from sklearn.decomposition import PCA
+pca = PCA(n_components=50)
+pca.fit(fruits_2d)
+
+print(pca.components_.shape) # (50, 10000)
+```
+***n_components*** : 주성분의 개수
+
+PCA 클래스가 찾은 주성분은 ***components_*** 속성에 저장
+- 첫 번째 차원 : 주성분의 개수가 50이므로 50
+- 두 번째 차원 : 원본 데이터의 특성 개수와 같은 10000
+
+```
+# 주성분을 이미지처럼 출력
+draw_fruits(pca.components_.reshape(-1, 100, 100))
+```
+
+<img width=300 src="https://github.com/user-attachments/assets/a4e2addc-e206-4942-9642-f8b3859d6a9f"/>
+
+원본 데이터에서 가장 분산이 큰 방향을 순서대로 나타냄
+```
+# 주성분을 찾았으니, 차원 줄이기
+print(fruits_2d.shape) # (300, 10000)
+fruits_pca = pca.transform(fruits_2d)
+
+print(fruits_pca.shape) # (300, 50)
+```
+
+> 원본 데이터 재구성
+
+***inverse_transform()*** : 원본 데이터를 상당 부분 재구성하는 메서드
+
+**↓  원본 데이터 재구성하는 코드**
+```
+fruits_inverse = pca.inverse_transform(fruits_pca)
+print(fruits_inverse.shape) # (300, 10000)
+```
+```
+# 복원된 데이터를 100개씩 나누어 출력
+fruits_reconstruct = fruits_inverse.reshape(-1, 100, 100)
+for start in [0, 100, 200]:
+  draw_fruits(fruits_reconstruct[start:start+100])
+  print("\n")
+```
+<img width=400 src="https://github.com/user-attachments/assets/eef62027-40f1-4c74-8e2a-9858cbfa7925"/>
+
+> 설명된 분산>
+
+<font color='#1E90FF'>설명된 분산(explained variance)</font> ? 주성분이 원본 데이터의 분산을 얼마나 잘 나타내는지 기록한 값
+- PCA 클래스의 ***explained_variance_ratio_*** 에 설명된 분산 비율이 기록되어 있음
+- 첫 번째 주성분의 설명된 분산이 가장 큼
+
+**↓  설명된 분산, 총 분산 비율 구하는 코드**
+```
+# 총 분산 비율
+
+print(np.sum(pca.explained_variance_ratio_))
+# 0.9215333578580416
+```
+=> 복원했을 때의 원본 이미지의 품질이 높은 이유임!!
+
+<br/>
+
+> 다른 알고리즘과 함께 사용하기
+
+
+**↓  로지스틱 회귀 알고리즘과 같이 사용하는 코드**
+```
+from sklearn.linear_model import LogisticRegression
+lr = LogisticRegression()
+
+target = np.array([0]*100 + [1]*100 + [2]*100)
+```
+```
+# cross_validate 사용해서 교차 검증 실행
+from sklearn.model_selection import cross_validate
+scores = cross_validate(lr, fruits_2d, target)
+print(np.mean(scores['test_score']))
+print(np.mean(scores['fit_time']))
+
+# 0.9966666666666667
+# 1.6808361053466796
+```
+```
+# PCA로 축소한 fruits_pca를 사용했을 떄와 비교
+
+scores = cross_validate(lr, fruits_pca, target)
+print(np.mean(scores['test_score']))
+print(np.mean(scores['fit_time']))
+
+# 1.0
+# 0.07098498344421386
+```
+=> 훈련 시간이 1.6 -> 0.07로 대폭 감소됨!!
+
+<font color='#FF69B4'>=> PCA로 훈련 데이터의 차원을 축소하면 저장 공간뿐만 아니라 모델의 훈련 속도도 높일 수 있다!!</font>
+
+```
+# 설명된 분산의 50%에 달하는 주성분 찾기
+
+pca = PCA(n_components=0.5)
+pca.fit(fruits_2d)
+
+print(pca.n_components_) # 2
+```
+=> 단 2개의 특성만으로 원본 데이터에 있는 분산의 50% 표현 가능!!
+```
+# 원본 데이터로 변환하기
+
+fruits_pca = pca.transform(fruits_2d)
+print(fruits_pca.shape) # (300, 2)
+```
+주성분이 2개이므로 변환된 데이터의 크기는 (300, 2)
+```
+# 교차 검증
+
+scores = cross_validate(lr, fruits_pca, target)
+print(np.mean(scores['test_score']))
+print(np.mean(scores['fit_time']))
+
+# 0.9933333333333334
+# 0.030288887023925782
+```
+
+**↓  k-평균 알고리즘으로 클러스터 찾는 코드**
+```
+# 차원 축소된 데이터를 사용해 k-평균 알고리즘으로 클러스터 찾기
+
+from sklearn.cluster import KMeans
+km = KMeans(n_clusters=3, random_state=42)
+km.fit(fruits_pca)
+print(np.unique(km.labels_, return_counts=True))
+
+# (array([0, 1, 2], dtype=int32), array([110,  99,  91]))
+```
+<img width=400 src="https://github.com/user-attachments/assets/e7262b70-188b-470d-a55f-f232b66ee451"/>
+
+```
+# KMeans가 찾은 레이블을 사용하여 과일 이미지 출력
+
+for label in range(0, 3):
+  draw_fruits(fruits[km.labels_ == label])
+  print("\n")
+```
+<img width=200 src="https://github.com/user-attachments/assets/f2898426-336e-443c-bac8-2e5c6902370c"/>
+
+```
+# km.labels_을 사용해 클러스터별로 나누고 산점도 그리기
+
+for label in range(0, 3):
+  data = fruits_pca[km.labels_ == label]
+  plt.scatter(data[:, 0], data[:, 1])
+plt.legend(['apple', 'banana', 'pineapple'])
+plt.show()
+```

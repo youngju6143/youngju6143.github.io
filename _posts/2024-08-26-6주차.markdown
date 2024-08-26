@@ -6,3 +6,161 @@ categories: ML Session
 ---
 
 ## Chapter 6 : 비지도 학습
+
+### 6-1 군집 알고리즘
+
+> 타깃을 모르는 비지도 학습
+
+<font color='#1E90FF'>비지도 학습(unsupervised learning)</font> ? 타깃이 없을 때 사용하는 머신러닝 알고리즘
+- 사이킷런이 결정 트리 알고리즘 제공 (DecisionTreeClassifier)
+    - plot_tree() : 결정 트리를 이해하기 쉬운 트리 그림으로 출력해주는 함수
+- <font color='#FF69B4'>표준화 전처리가 필요 없음!!!!</font>
+
+> 과일 사진 데이터 준비하기
+
+**↓ 과일 사진 데이터 준비하기 코드**
+```
+!wget https://bit.ly/fruits_300 -O fruits_300.npy
+```
+***!*** : 리눅스 셸 명령으로 이해하게 해주는 문자<br/>
+***wget*** : 원격 주소에서 데이터를 다운로드하여 저장<br/>
+***-O*** : 저장할 파일 이름을 지정 (fruits_300.npy)<br/>
+```
+import numpy as np
+import matplotlib.pyplot as plt
+
+fruits = np.load('fruits_300.npy')
+print(fruits.shape) # (300, 100, 100)
+```
+첫 번째 차원(300) : 샘플의 개수 <br/>
+두 번째 차원(100) : 이미지의 높이 <br/>
+세 번째 차원(100) : 이미지의 너비 <br/>
+=> 이미지의 크기 : 100 X 100 <br/>
+```
+# 첫 번째 이미지의 첫 번째 행 출력
+print(fruits[0, 0, :])
+
+'''
+[  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   2   1
+   2   2   2   2   2   2   1   1   1   1   1   1   1   1   2   3   2   1
+   2   1   1   1   1   2   1   3   2   1   3   1   4   1   2   5   5   5
+  19 148 192 117  28   1   1   2   1   4   1   1   3   1   1   1   1   1
+   2   2   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1
+   1   1   1   1   1   1   1   1   1   1]
+'''
+```
+픽셀 100개에 들어있는 값을 출력함 <br/>
+**0에 가까울수록 검게** 나타나고 값이 **높을수록 밝게** 표시됨
+```
+plt.imshow(fruits[0], cmap='gray')
+plt.show()
+```
+***imshow*** : 넘파이 배열로 저장된 이미지를 그림
+- ***cmap='gray'*** : 흑백으로 저장
+- ***cmap='gray_r'*** : 반전 흑백으로 확인
+
+<img width=200 src="https://github.com/user-attachments/assets/41838b2f-ba8a-4b03-a827-933eb07f718f"/>
+
+실제 사진은 바탕이 흰색, 사과가 더 짙은색이나, 출력하면 반전됨<br/>
+이유는 ? 사진으로 찍은 이미지를 <font color='#FF69B4'>넘파이 배열로 변환할 때 반전</font>시켰기 때문!
+
+<img width=200 src="https://github.com/user-attachments/assets/e86317ea-7b4b-4ff4-ba2c-37f9678432ff"/>
+
+굳이 이렇게 바꾼 이유는 ?<br/>
+컴퓨터는 수치로 해석, 0인 값에 초점을 맞추게 되면 아무리 곱하거나 더해도 0이므로<br/>
+밝은 색인 255에 초점을 맞춰야 함 -> 우리가 확인하고 싶은 건 **사과** <br/>
+<font color='#FF69B4'>=> 따라서 사과를 밝은 색으로 해야 하기 위해 색을 반전시킴</font> 
+
+**↓ cmap='gray_r'을 통해 원래의 색상으로 확인 가능**
+```
+fig, axs = plt.subplots(1, 2)
+axs[0].imshow(fruits[100], cmap='gray_r')
+axs[1].imshow(fruits[200], cmap='gray_r')
+plt.show()
+```
+***subplots()*** : 여러 개의 그래프를 배열처럼 쌓을 수 있도록 함
+<img width=300 src="https://github.com/user-attachments/assets/bfb1b763-ab9b-4df1-8b41-872c6e469777"/>
+
+> 픽셀값 분석하기
+
+**↓ 배열로 계산하기 위해 100 X 100 이미지를, 길이가 10000인 1차원 배열로 만듦**
+```
+apple = fruits[0:100].reshape(-1, 100*100)
+pineapple = fruits[100:200].reshape(-1, 100*100)
+banana = fruits[200:300].reshape(-1, 100*100)
+
+print(apple.shape) # (100, 10000)
+```
+샘플마다 픽셀의 평균값을 계산해야 함
+- mean() 메서드 사용
+
+**↓ 평균값 계산하는 코드**
+```
+# 샘플의 평균값 계산
+
+print(apple.mean(axis=1)) // 각 샘플의 픽셀 평균값 계산
+
+# 픽셀별 평균값 비교 (not 샘플의 평균값)
+
+fig, axs = plt.subplots(1, 3, figsize=(20, 5))
+axs[0].bar(range(10000), np.mean(apple, axis=0))
+axs[1].bar(range(10000), np.mean(pineapple, axis=0))
+axs[2].bar(range(10000), np.mean(banana, axis=0))
+plt.show()
+```
+<img width=300 src="https://github.com/user-attachments/assets/50964a10-cc95-4190-847e-f367bc1ee2f5"/> <br/>
+
+높은 부분 - 사과 : 아래쪽 / 파인애플 : 고르게 높음 / 바나나 : 중앙쪽
+```
+apple_mean = np.mean(apple, axis=0).reshape(100, 100)
+pineapple_mean = np.mean(pineapple, axis=0).reshape(100, 100)
+banana_mean = np.mean(banana, axis=0).reshape(100, 100)
+
+fig, axs = plt.subplots(1, 3, figsize=(20, 5))
+axs[0].imshow(apple_mean, cmap='gray_r')
+axs[1].imshow(pineapple_mean, cmap='gray_r')
+axs[2].imshow(banana_mean, cmap='gray_r')
+plt.show()
+```
+
+<img width=300 src="https://github.com/user-attachments/assets/20660ead-583b-45a6-aaf2-d1818f82724c"/>
+
+> 평균값과 가까운 사진 고르기
+
+평균값과 가까운 사진 고르는 방법 : <font color='#FF69B4'>절댓값 오차</font>를 사용하여 오차가 가장 작은 이미지 선정!!
+ - 절댓값 구하는 함수 : ***abs()***
+
+**↓ 절댓값 오차 계산하는 코드**
+```
+# 절댓값 계산
+
+abs_diff = np.abs(fruits - apple_mean)
+abs_mean = np.mean(abs_diff, axis=(1, 2)) # 각 샘플의 오차 평균
+print(abs_mean.shape) # (300,)
+```
+```
+# apple_mean과 오차가 가장 작은 샘플 100개 선정
+
+apple_index = np.argsort(abs_mean)[:100]
+fig, axs = plt.subplots(10, 10, figsize=(10, 10))
+
+for i in range(10): 
+  for j in range(10):
+    axs[i, j].imshow(fruits[apple_index[i*10 + j]], cmap='gray_r')
+    axs[i, j].axis('off')
+
+plt.show()
+```
+***np.argsort()*** : 작은 것에서 큰 순서대로 나열한 abs_mean 배열의 인덱스를 반환하는 함수 <br/>
+***axis('off')*** : 축 제거
+
+<img width=200 src="https://github.com/user-attachments/assets/c8fb4d5c-a338-45e8-b892-fb2e4a323c5d"/>
+
+<font color='#1E90FF'>군집(clustering)</font> ? 비슷한 샘플끼리 그룹으로 모으는 작업
+- 위 코드에서와 같이 비슷한 샘플 100개를 모아 출력
+- 대표적인 비지도 학습 중 하나
+
+<font color='#1E90FF'>클러스터(cluster)</font> ? 군집 알고리즘에서 만든 그룹
+
+---
+### 6-2 평균
